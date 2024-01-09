@@ -1,0 +1,109 @@
+' Ensure starting Sub, determine Worksheet, and zone in on This Active Workbook function
+
+Sub StockHWAnalysis()
+    Dim ws As Worksheet
+    
+    For Each ws In ThisWorkbook.Worksheets
+        Call StockData(ws)
+
+    Next ws
+End Sub
+
+
+Sub StockData(ws As Worksheet)
+    ' Definition Section Dump for All Variables Relevant to OutPut, include as needed
+    Dim lastRow As Long
+    Dim ticker As String
+    Dim Change As Double
+    Dim perChange As Double
+    Dim totalVol As Double
+    Dim startprice As Double
+    Dim closeprice As Double
+    Dim rowstart As Long
+    Dim GreatestInc As Double
+    Dim GreatestDec As Double
+    Dim GreatestVol As Double
+    Dim TicGreatestInc As String
+    Dim TicGreatestDec As String
+    Dim TicGreatestVol As String
+    
+    ' Apply numerical values to more Variables for each dedicated variable to calculate for output, make them 0 for calc
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    GreatestInc = 0
+    GreatestDec = 0
+    GreatestVol = 0
+    totalVol = 0
+
+    ' Start on Row of values from the Top
+    rowstart = 2
+
+    ' Indicate the reading of each row
+For i = 2 To lastRow
+    ' Check if we are still within the same ticker symbol
+    If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+        ' Apply to Ticker 
+        ticker = ws.Cells(i, 1).Value
+        ' Assign Total Volume
+        totalVol= totalVol + ws.Cells(i, 7).Value
+        ' Complete Closing Ending Price
+        closeprice = ws.Cells(i, 6).Value
+        ' Define Change with Math Values
+        Change = closeprice - startprice
+        ' Define that as a Percentage Change and account for 0
+        If startprice <> 0 Then
+            perChange = (Change / startprice) * 100
+        Else
+            perChange = 0
+        End If
+        
+        ' Export the text of the ticker, yearly and percent, and total volume
+        ws.Range("I" & rowstart).Value = ticker
+        ws.Range("J" & rowstart).Value = Change
+        ws.Range("K" & rowstart).Value = perChange
+        ws.Range("L" & rowstart).Value = totalVol
+        
+        ' Identify conditional formatting function
+        If Change >= 0 Then
+            ws.Range("J" & rowstart).Interior.Color = vbGreen
+        Else
+            ws.Range("J" & rowstart).Interior.Color = vbRed
+        End If
+        
+        ' Identify Percent change and total vol
+        If perChange > GreatestInc Then
+            GreatestInc = perChange
+            TicGreatestInc = ticker
+        ElseIf perChange < GreatestDec Then
+            GreatestDec = perChange
+            TicGreatestDec = ticker
+        End If
+        If totalVol > GreatestVol Then
+            GreatestVol = totalVol
+            TicGreatestVol = ticker
+        End If
+        
+        ' Correct Total Vol to Start
+        totalVol = 0
+        ' Assign Row Start for Ticker
+        rowstart = rowstart + 1
+        ' Define startpricing
+        startprice = ws.Cells(i + 1, 3).Value
+    Else
+        ' Condense totalvolume values
+        totalVol = totalVol + ws.Cells(i, 7).Value
+    End If
+Next i
+
+'Ensure If is closed prior to Export of Values into ws
+
+' Export values necessary pertaining to increases and decreases of tickers and volume
+ws.Range("O2").Value = TicGreatestInc
+ws.Range("P2").Value = GreatestInc
+ws.Range("O3").Value = TicGreatestDec
+ws.Range("P3").Value = GreatestDec
+ws.Range("O4").Value = TicGreatestVol
+ws.Range("P4").Value = GreatestVol
+
+' End the Sub
+
+End Sub
