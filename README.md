@@ -1,6 +1,4 @@
-This code is looking to:
-
-Create a script that loops through all the stocks for one year and outputs the following information:
+This code is looking to create a script that loops through all the stocks for one year and outputs the following :
 
 The ticker symbol
 
